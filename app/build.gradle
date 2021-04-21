@@ -1,6 +1,7 @@
 plugins {
     id 'com.android.application'
     id 'kotlin-android'
+    id 'kotlin-kapt'
 }
 
 android {
@@ -22,5 +23,8 @@ dependencies {
     implementation 'androidx.core:core-ktx:1.6.0'
     implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.3.1'
     implementation 'androidx.paging:paging-runtime-ktx:3.0.1'
+    implementation "androidx.room:room-runtime:2.4.0-alpha04"
+    implementation "androidx.room:room-ktx:2.4.0-alpha04"
+    kapt "androidx.room:room-compiler:2.4.0-alpha04"
     implementation 'com.google.android.material:material:1.4.0'
 }
