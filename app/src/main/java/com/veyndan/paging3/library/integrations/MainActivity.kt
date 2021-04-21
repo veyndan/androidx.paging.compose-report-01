@@ -1,21 +1,26 @@
 package com.veyndan.paging3.library.integrations
 
 import android.os.Bundle
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
-import android.widget.TextView
+import androidx.activity.compose.setContent
 import androidx.appcompat.app.AppCompatActivity
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material.Divider
+import androidx.compose.material.Surface
+import androidx.compose.material.Text
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.lifecycleScope
 import androidx.paging.LoadType
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
-import androidx.paging.PagingDataAdapter
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
 import androidx.paging.RemoteMediator
-import androidx.recyclerview.widget.DiffUtil
-import androidx.recyclerview.widget.RecyclerView
+import androidx.paging.cachedIn
+import androidx.paging.compose.collectAsLazyPagingItems
+import androidx.paging.compose.itemsIndexed
 import androidx.room.Dao
 import androidx.room.Database
 import androidx.room.Entity
@@ -26,8 +31,6 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.withTransaction
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.launch
 
 private class CustomRemoteMediator(private val database: AppDatabase) : RemoteMediator<Int, Dummy>() {
 
@@ -62,7 +65,7 @@ private class CustomRemoteMediator(private val database: AppDatabase) : RemoteMe
     }
 }
 
-class MainActivity : AppCompatActivity(R.layout.main) {
+class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -84,41 +87,21 @@ class MainActivity : AppCompatActivity(R.layout.main) {
             )
         }
 
-        val pagingAdapter = DummyAdapter()
-        val recyclerView = requireViewById<RecyclerView>(R.id.recycler_view)
-        recyclerView.adapter = pagingAdapter
+        val items = pager.flow.cachedIn(lifecycleScope)
 
-        lifecycleScope.launch {
-            pager.flow.collectLatest { pagingData ->
-                pagingAdapter.submitData(pagingData)
+        setContent {
+            val lazyPagingItems = items.collectAsLazyPagingItems()
+
+            Surface {
+                LazyColumn {
+                    itemsIndexed(lazyPagingItems) { index, item ->
+                        Text("$index · ${item!!.key}", Modifier.padding(16.dp), fontSize = 16.sp)
+                        Divider()
+                    }
+                }
             }
         }
     }
-}
-
-class DummyAdapter : PagingDataAdapter<Dummy, DummyAdapter.DummyViewHolder>(DummyComparator) {
-
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): DummyViewHolder {
-        val itemView = LayoutInflater.from(parent.context).inflate(R.layout.item, parent, false)
-        return DummyViewHolder(itemView)
-    }
-
-    override fun onBindViewHolder(holder: DummyViewHolder, position: Int) {
-        val item = getItem(position)!!
-        holder.textView.text = "$position · ${item.key}"
-    }
-
-    class DummyViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-
-        val textView = itemView.requireViewById<TextView>(R.id.text)
-    }
-}
-
-object DummyComparator : DiffUtil.ItemCallback<Dummy>() {
-
-    override fun areItemsTheSame(oldItem: Dummy, newItem: Dummy): Boolean = oldItem.key == newItem.key
-
-    override fun areContentsTheSame(oldItem: Dummy, newItem: Dummy): Boolean = oldItem == newItem
 }
 
 @Entity
