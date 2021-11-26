@@ -94,8 +94,8 @@ class MainActivity : AppCompatActivity() {
 
             Surface {
                 LazyColumn {
-                    itemsIndexed(lazyPagingItems) { index, item ->
-                        Text("$index · ${item!!.key}", Modifier.padding(16.dp), fontSize = 16.sp)
+                    itemsIndexed(lazyPagingItems, key = { _, item -> item.key }) { index, item ->
+                        Text("${item!!.key}", Modifier.padding(16.dp), fontSize = 16.sp)
                         Divider()
                     }
                 }
